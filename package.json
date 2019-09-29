@@ -1,0 +1,21 @@
+{
+  "name": "mfont",
+  "version": "0.0.4",
+  "description": "install font without reboot and remove font in windows",
+  "main": "index.js",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^1.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "dev": "node ./src/dev.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "install",
+    "font"
+  ],
+  "author": "Vic1024",
+  "license": "GPL-3.0"
+}
