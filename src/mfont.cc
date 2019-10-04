@@ -7,9 +7,11 @@
 #include <string>
 #include <atlbase.h> // 注册表
 #include <atlconv.h> // 类型转换
+#include <atlstr.h>
 
 using namespace Napi;
 
+static int _HASFONT = 0;
 static std::string _ERROR = "";
 static std::string _FONTPATH = "C:\\Windows\\Fonts\\";
 static std::string _REGPATH_1 = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
@@ -297,6 +299,50 @@ std::string RegeditDelete(std::string path, std::string name) {
   * --------------------------------- 字体操作部分 ---------------------------------
 **/
 
+/**
+  * -------- 判断字体是否存在的回调函数 --------
+  * 返回类型：int [0|1]
+**/
+int CALLBACK EnumFontsProc(LOGFONT* lplf, TEXTMETRIC* lptm, DWORD	dwType, LPARAM	lpData) {
+  CString tempFontName(lplf->lfFaceName); // 获取查找到的字体名称
+  // _ERROR = std::to_string(tempFontName.GetLength());
+  // _ERROR = CT2A(tempFontName);
+  _HASFONT = tempFontName.GetLength(); // 获取查找到的字体名称长度
+  if (tempFontName.GetLength() > 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+/**
+  * -------- 判断字体是否存在 --------
+  * 返回类型：String [0|1]
+  * 返回结果：[
+  *     0： 字体不存在,
+  *     1： 字体存在，
+  * ]
+**/
+std::string FontFind(std::string name) {
+  _ERROR = "";
+  _HASFONT = 0;
+  std::string result = "0";
+  // 提取整个屏幕的DC
+  HDC hdc = ::GetDC(NULL);
+  LPARAM  lp;
+  // 判断字体是否在系统可用
+  lp = EnumFonts(hdc, name.c_str(), (FONTENUMPROC)EnumFontsProc, 0);
+  _ERROR = std::to_string(_HASFONT);
+  if(_HASFONT <= 0) {
+    _ERROR = "font not find";
+    result = "0";
+  } else {
+    // _ERROR = "font found";
+    _ERROR = "";
+    result = "1";
+  } 
+  return result;
+}
 
 /**
   * -------- 添加字体 --------
@@ -461,6 +507,11 @@ String DeleteFont(const CallbackInfo& info) {
   return String::New(info.Env(), FontDelete(_FONTPATH + file));
 }
 
+// 字体是否注册
+String HasFont(const CallbackInfo& info) {
+  return String::New(info.Env(), std::string(FontFind(info[0].As<String>().Utf8Value())));
+}
+
 // 注册字体
 String InstallFont(const CallbackInfo& info) {
   _ERROR = "";
@@ -540,6 +591,7 @@ Napi::Object  Init(Env env, Object exports) {
   // exports.Set("readreg", Function::New(env, ReadReg)); // readreg(路径, 键名)都是字符串类型传入
   // exports.Set("savereg", Function::New(env, WriteReg)); // savereg(路径, 键名， 值， 类型)都是字符串类型传入
   // exports.Set("delreg", Function::New(env, DeleteReg)); // delreg(路径, 键名)都是字符串类型传入
+  exports.Set("hasFont", Function::New(env, HasFont)); // 字体是否安装
   exports.Set("installFont", Function::New(env, InstallFont)); // 安装注册字体
   exports.Set("removeFont", Function::New(env, RemoveFont)); // 删除字体
   exports.Set("getError", Function::New(env, GetError)); // getError()

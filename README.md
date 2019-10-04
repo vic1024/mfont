@@ -33,6 +33,15 @@ npm install mfont
 
 import MFont from 'mfont'
 
+# 查询字体-字体在系统中是否可用 (只支持字体名称为英文的查询)
+
+let temp0 = MFont.hasFont('SimSun')
+if (temp0 === '1') {
+    return '字体在系统中可用'
+} else {
+    return MFont.getError()
+}
+
 # 安装字体
 
 // 情况1：字体文件内设置的字体名称 === 字体文件名称
