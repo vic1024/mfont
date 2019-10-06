@@ -29,11 +29,11 @@ npm install mfont
 ## 使用范例
 
 ``` javascript
-# 引用
+// 引用
 
 import MFont from 'mfont'
 
-# 查询字体-字体在系统中是否可用 (只支持字体名称为英文的查询)
+// 查询字体-字体在系统中是否可用 (只支持字体名称为英文的查询)
 
 let temp0 = MFont.hasFont('SimSun')
 if (temp0 === '1') {
@@ -42,7 +42,7 @@ if (temp0 === '1') {
     return MFont.getError()
 }
 
-# 安装字体
+// 安装字体
 
 // 情况1：字体文件内设置的字体名称 === 字体文件名称
 // 使用方法：installFont（字体文件名称）
@@ -64,7 +64,7 @@ if (temp2 === '1') {
     return MFont.getError()
 }
 
-# 卸载字体
+// 卸载字体
 
 // 情况1：字体文件内设置的字体名称 === 字体文件名称
 // 使用方法：removeFont（字体文件名称）
@@ -88,5 +88,10 @@ if (temp4 === '1') {
 
 
 ```
+
+# 项目地址
+
+- [GitHub](https://github.com/vic1024/mfont)
+- [NPM](https://www.npmjs.com/package/mfont)
 
 ---

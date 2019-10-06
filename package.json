@@ -1,6 +1,6 @@
 {
   "name": "mfont",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "install font without reboot and remove font in windows",
   "main": "index.js",
   "dependencies": {
@@ -16,6 +16,6 @@
     "install",
     "font"
   ],
-  "author": "Vic1024",
+  "author": "vic1024",
   "license": "GPL-3.0"
 }
