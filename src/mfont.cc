@@ -1,5 +1,6 @@
 #include <napi.h>
 #include <iostream>
+#if defined(_WIN32) || defined(_WIN64)
 // #include <wingdi.h>
 #include <Windows.h>
 #include <tchar.h>
@@ -8,11 +9,13 @@
 #include <atlbase.h> // 注册表
 #include <atlconv.h> // 类型转换
 #include <atlstr.h>
+#endif
 
 using namespace Napi;
-
-static int _HASFONT = 0;
 static std::string _ERROR = "";
+
+#if defined(_WIN32) || defined(_WIN64)
+static int _HASFONT = 0;
 static std::string _FONTPATH = "C:\\Windows\\Fonts\\";
 static std::string _REGPATH_1 = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
 static std::string _REGPATH_2 = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes";
@@ -506,14 +509,25 @@ String DeleteFont(const CallbackInfo& info) {
   std::string file = info[0].As<String>().Utf8Value();
   return String::New(info.Env(), FontDelete(_FONTPATH + file));
 }
+#endif
 
-// 字体是否注册
+// 字体是否安装
 String HasFont(const CallbackInfo& info) {
-  return String::New(info.Env(), std::string(FontFind(info[0].As<String>().Utf8Value())));
+std::string result = "0";
+#if defined(_WIN32) || defined(_WIN64)
+  result = FontFind(info[0].As<String>().Utf8Value());
+#endif
+#if !defined(_WIN32) && !defined(_WIN64)
+  _ERROR = "system is not win";
+  result = "0";
+#endif
+  return String::New(info.Env(), result);
 }
 
-// 注册字体
+// 安装注册字体
 String InstallFont(const CallbackInfo& info) {
+std::string result = "0";
+#if defined(_WIN32) || defined(_WIN64)
   _ERROR = "";
   std::string file = info[0].As<String>().Utf8Value(); // 获取字体文件名称
   std::string filename = file.substr(0, file.find_last_of('.'));
@@ -523,31 +537,44 @@ String InstallFont(const CallbackInfo& info) {
   int r = std::experimental::filesystem::exists(_T(_FONTPATH + file.c_str()));
   if (r <= 0) {
     _ERROR = "font add faile: can't find font file."; // "查找不到字体文件";
-    return String::New(info.Env(), std::string("0"));
-  }
-  std::string filesubfix = file.substr(file.find_last_of('.') + 1);
-  std::string result1 = RegeditWrite(_REGPATH_1, filename, file, "REG_SZ");
-  if (result1 == "1") {
-    std::string result2 = RegeditWrite(_REGPATH_2, filename, filename, "REG_SZ");
-    if (result2 == "1") {
-      std::string addresult = FontAdd(_FONTPATH + file);
-      if (addresult == "6") {
-        return String::New(info.Env(), std::string("1"));
-      } else if (addresult != "0") {
-        _ERROR = "font add faile: " + addresult + "."; // "字体添加失败";
-        return String::New(info.Env(), std::string("0"));
+    result = "0";
+  } else {
+    std::string filesubfix = file.substr(file.find_last_of('.') + 1);
+    std::string result1 = RegeditWrite(_REGPATH_1, filename, file, "REG_SZ");
+    if (result1 == "1") {
+      std::string result2 = RegeditWrite(_REGPATH_2, filename, filename, "REG_SZ");
+      if (result2 == "1") {
+        std::string addresult = FontAdd(_FONTPATH + file);
+        if (addresult == "6") {
+          result = "1";
+        } else if (addresult != "0") {
+          _ERROR = "font add faile: " + addresult + "."; // "字体添加失败";
+          result = "0";
+        } else {
+          _ERROR = "font add faile: " + _ERROR; // "字体添加失败";
+          result = "0";
+        }
       } else {
-        _ERROR = "font add faile: " + _ERROR; // "字体添加失败";
-        return String::New(info.Env(), std::string("0"));
+        _ERROR = "font add faile: write regedit faile."; // "注册表写入失败";
+        result = "0";
       }
+    } else {
+      _ERROR = "font add faile: write regedit faile."; // "注册表写入失败";
+      result = "0";
     }
   }
-  _ERROR = "font add faile: write regedit faile."; // "注册表写入失败";
-  return String::New(info.Env(), std::string("0"));
+#endif
+#if !defined(_WIN32) && !defined(_WIN64)
+  _ERROR = "system is not win";
+  result = "0";
+#endif
+  return String::New(info.Env(), result);
 }
 
-// 移除字体
+// 删除字体
 String RemoveFont(const CallbackInfo& info) {
+std::string result = "0";
+#if defined(_WIN32) || defined(_WIN64)
   _ERROR = "";
   std::string file = info[0].As<String>().Utf8Value(); // 获取字体文件名称
   std::string filename = file.substr(0, file.find_last_of('.'));
@@ -557,27 +584,38 @@ String RemoveFont(const CallbackInfo& info) {
   int r = std::experimental::filesystem::exists(_T(_FONTPATH + file.c_str()));
   if (r <= 0) {
     _ERROR = "font add faile: can't find font file."; // "查找不到字体文件";
-    return String::New(info.Env(), std::string("0"));
-  }
-  std::string filesubfix = file.substr(file.find_last_of('.') + 1);
-  std::string result1 = RegeditDelete(_REGPATH_1, filename);
-  if (result1 == "1") {
-    std::string result2 = RegeditDelete(_REGPATH_2, filename);
-    if (result2 == "1") {
-      std::string addresult = FontDelete(_FONTPATH + file);
-      if (addresult == "6") {
-        return String::New(info.Env(), std::string("1"));
-      } else if (addresult != "0") {
-        _ERROR = "font remove faile: " + addresult + "."; // "字体移除失败-操作失败";
-        return String::New(info.Env(), std::string("0"));
+    result = "0";
+  } else {
+    std::string filesubfix = file.substr(file.find_last_of('.') + 1);
+    std::string result1 = RegeditDelete(_REGPATH_1, filename);
+    if (result1 == "1") {
+      std::string result2 = RegeditDelete(_REGPATH_2, filename);
+      if (result2 == "1") {
+        std::string addresult = FontDelete(_FONTPATH + file);
+        if (addresult == "6") {
+          result = "1";
+        } else if (addresult != "0") {
+          _ERROR = "font remove faile: " + addresult + "."; // "字体移除失败-操作失败";
+          result = "0";
+        } else {
+          _ERROR = "font remove faile: " + _ERROR; // "字体移除失败-字体文件不存在";
+          result = "0";
+        }
       } else {
-        _ERROR = "font remove faile: " + _ERROR; // "字体移除失败-字体文件不存在";
-        return String::New(info.Env(), std::string("0"));
+        _ERROR = "font remove faile: write regedit faile."; // "注册表写入失败";
+        result = "0";
       }
+    } else {
+      _ERROR = "font remove faile: write regedit faile."; // "注册表写入失败";
+      result = "0";
     }
   }
-  _ERROR = "font remove faile: write regedit faile."; // "注册表写入失败";
-  return String::New(info.Env(), std::string("0"));
+#endif
+#if !defined(_WIN32) && !defined(_WIN64)
+  _ERROR = "system is not win";
+  result = "0";
+#endif
+  return String::New(info.Env(), result);
 }
 
 // 返回错误
@@ -597,4 +635,5 @@ Napi::Object  Init(Env env, Object exports) {
   exports.Set("getError", Function::New(env, GetError)); // getError()
   return exports;
 }
+
 NODE_API_MODULE(addon, Init)
