@@ -158,8 +158,7 @@ std::string RegeditRead(std::string path, std::string name) {
   HKEY hkey = FindRegeditHKEY(p0);
   std::string p1 = path.substr(path.find("\\") + 1); // 路径，要消除前面的HKLM
   std::string lastreturn = ""; // 最后的返回值
-
-  HKEY hKEY; // 定义有关的键，在查询结束时关闭  
+  HKEY hKEY; // 定义有关的键，在查询结束时关闭
   LPCTSTR data_set = p1.c_str(); // 打开与路径data_Set相关的hKEY
   // char dwValue[256]; // 用于存储查询结果的变量，默认为字符串数据
   // DWORD dwValue; // 长整型数据，如果是字符串数据用char数组
@@ -277,7 +276,7 @@ std::string RegeditDelete(std::string path, std::string name) {
   std::string p1 = path.substr(path.find("\\") + 1);
   std::string lastreturn = "0"; // 最后的返回值
 
-  HKEY hKEY; // 定义有关的键，在查询结束时关闭  
+  HKEY hKEY; // 定义有关的键，在查询结束时关闭
   LPCTSTR data_set = p1.c_str(); // 打开与路径data_Set相关的hKEY
   LONG openreturn = (::RegOpenKeyEx(hkey, data_set, 0, KEY_SET_VALUE, &hKEY));
   //访问注册表，hKEY则保存此函数所打开的键的句柄
@@ -409,13 +408,9 @@ std::string FontDelete(std::string file) {
   return std::to_string(rr);
 }
 
-
-
-
 /**
   * --------------------------------- 对外操作部分 ---------------------------------
 **/
-
 
 /**
   * -------- 读取注册表 --------
@@ -457,7 +452,6 @@ String WriteReg(const CallbackInfo& info) {
     _ERROR = std::string("param error."); // std::string("传入参数错误");
     return String::New(info.Env(), std::string(""));
   }
-
   std::string path = info[0].As<String>().Utf8Value();
   std::string name = info[1].As<String>().Utf8Value();
   std::string value = info[2].As<String>().Utf8Value();
@@ -516,8 +510,7 @@ String HasFont(const CallbackInfo& info) {
 std::string result = "0";
 #if defined(_WIN32) || defined(_WIN64)
   result = FontFind(info[0].As<String>().Utf8Value());
-#endif
-#if !defined(_WIN32) && !defined(_WIN64)
+#else
   _ERROR = "system is not win";
   result = "0";
 #endif
@@ -563,8 +556,7 @@ std::string result = "0";
       result = "0";
     }
   }
-#endif
-#if !defined(_WIN32) && !defined(_WIN64)
+#else
   _ERROR = "system is not win";
   result = "0";
 #endif
@@ -610,8 +602,7 @@ std::string result = "0";
       result = "0";
     }
   }
-#endif
-#if !defined(_WIN32) && !defined(_WIN64)
+#else
   _ERROR = "system is not win";
   result = "0";
 #endif
