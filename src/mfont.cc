@@ -348,11 +348,11 @@ std::string FontFind(std::string name) {
 
 /**
   * -------- 添加字体 --------
-  * 返回类型：String [0-6]
+  * 返回类型：String [0-4]
   * 返回结果：[
   *     0： 字体文件不存在,
-  *     1-5： 有操作动作，但未成功，检查一下字体文件是否正常，
-  *     6： 操作成功，
+  *     1-3： 有操作动作，但未成功，检查一下字体文件是否正常，
+  *     4： 操作成功，
   * ]
 **/
 std::string FontAdd(std::string file) {
@@ -365,13 +365,14 @@ std::string FontAdd(std::string file) {
     int err = GetLastError(); // 获取执行结果是否出错
     // int r0 = AddFontResourceA(_T(filepath.c_str()));
     // 发送消息给各个顶部窗口进行字体修改的更新-WM_FONTCHANGE
-    int r1 = ::SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    int r2 = SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    // SendMessage会造成卡死，弃用
+    // int r1 = ::SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    // int r2 = SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     int r3 = ::PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     int r4 = PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     // 重置系统光标，更新用户配置文件之后广播WM_SETTINGCHANGE消息
     int r5 = SystemParametersInfo(SPI_SETCURSORS, 0, NULL, SPIF_SENDCHANGE);
-    rr = r0 + r1 + r2 + r3 + r4 + r5;
+    rr = r0 + r3 + r4 + r5; // r0 + r1 + r2 + r3 + r4 + r5;
   } else {
     _ERROR = "can't find font file.";
   }
@@ -380,11 +381,11 @@ std::string FontAdd(std::string file) {
 
 /**
   * -------- 删除字体 --------
-  * 返回类型：String [0-6]
+  * 返回类型：String [0-4]
   * 返回结果：[
   *     0： 字体文件不存在,
-  *     1-5： 有操作动作，但未成功，检查一下字体文件是否正常，
-  *     6： 操作成功，
+  *     1-3： 有操作动作，但未成功，检查一下字体文件是否正常，
+  *     4： 操作成功，
   * ]
 **/
 std::string FontDelete(std::string file) {
@@ -395,13 +396,14 @@ std::string FontDelete(std::string file) {
     int r0 = RemoveFontResource(_T(file.c_str())); // 从系统字体列表中删除字体
     int err = GetLastError(); // 获取执行结果是否出错
     // 发送消息给各个顶部窗口进行字体修改的更新-WM_FONTCHANGE
-    int r1 = ::SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    int r2 = SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    // SendMessage会造成卡死，弃用
+    // int r1 = ::SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    // int r2 = SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     int r3 = ::PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     int r4 = PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     // 重置系统光标，更新用户配置文件之后广播WM_SETTINGCHANGE消息
     int r5 = SystemParametersInfo(SPI_SETCURSORS, 0, NULL, SPIF_SENDCHANGE);
-    rr = r0 + r1 + r2 + r3 + r4 + r5;
+    rr = r0 + r3 + r4 + r5; // r0 + r1 + r2 + r3 + r4 + r5;
   } else {
     _ERROR = "can't find font file.";
   }
@@ -538,7 +540,7 @@ std::string result = "0";
       std::string result2 = RegeditWrite(_REGPATH_2, filename, filename, "REG_SZ");
       if (result2 == "1") {
         std::string addresult = FontAdd(_FONTPATH + file);
-        if (addresult == "6") {
+        if (addresult == "4") {
           result = "1";
         } else if (addresult != "0") {
           _ERROR = "font add faile: " + addresult + "."; // "字体添加失败";
@@ -584,7 +586,7 @@ std::string result = "0";
       std::string result2 = RegeditDelete(_REGPATH_2, filename);
       if (result2 == "1") {
         std::string addresult = FontDelete(_FONTPATH + file);
-        if (addresult == "6") {
+        if (addresult == "4") {
           result = "1";
         } else if (addresult != "0") {
           _ERROR = "font remove faile: " + addresult + "."; // "字体移除失败-操作失败";
